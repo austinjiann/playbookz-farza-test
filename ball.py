@@ -10,6 +10,45 @@ import time
 with open('ball.json', 'r') as f:
     shot_data = json.load(f)
 
+# Filter to only actual shot attempts (made/missed)
+shot_data["shots"] = [s for s in shot_data["shots"] if s.get("result") in ("made", "missed")]
+
+# Apply 0.6s cooldown to prevent double-counting boundary makes
+def apply_cooldown_dedupe(shots, cooldown_seconds=0.6):
+    """Remove duplicate makes that are too close together."""
+    if not shots:
+        return shots
+    
+    filtered_shots = []
+    last_make_time = -999
+    
+    for shot in shots:
+        timestamp_seconds = parse_timestamp(shot["timestamp_of_outcome"])
+        
+        if shot["result"] == "made":
+            if timestamp_seconds - last_make_time >= cooldown_seconds:
+                filtered_shots.append(shot)
+                last_make_time = timestamp_seconds
+            # Skip made shots that are too close to previous make
+        else:
+            # Always include missed shots
+            filtered_shots.append(shot)
+    
+    # Recalculate running totals
+    made_count = 0
+    missed_count = 0
+    for shot in filtered_shots:
+        if shot["result"] == "made":
+            made_count += 1
+        else:
+            missed_count += 1
+        shot["total_shots_made_so_far"] = made_count
+        shot["total_shots_missed_so_far"] = missed_count
+    
+    return filtered_shots
+
+shot_data["shots"] = apply_cooldown_dedupe(shot_data["shots"])
+
 # Initialize MediaPipe Pose
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(
@@ -189,7 +228,7 @@ while process_cap.isOpened() and display_cap.isOpened():
                 current_shots_missed = shot['total_shots_missed_so_far']
             # Check if we should show feedback for this shot
             if shot['frame_number'] <= frame_count <= shot['feedback_end_frame']:
-                current_feedback = shot['feedback']
+                current_feedback = shot.get('feedback')  # Use .get() for safety
 
     # Display shot statistics in top left
     stats_font = cv2.FONT_HERSHEY_SIMPLEX
@@ -237,7 +276,7 @@ while process_cap.isOpened() and display_cap.isOpened():
                 (stats_x, stats_y + stats_spacing), stats_font, stats_scale, 
                 current_color if last_shot_result == 'missed' else white_color, stats_thickness, cv2.LINE_AA)
 
-    # Display feedback if available
+    # Display feedback if available (and not None)
     if current_feedback:
         feedback_font = cv2.FONT_HERSHEY_SIMPLEX
         feedback_scale = 1.8  # Changed from 0.6 to 1.8 (3x larger)

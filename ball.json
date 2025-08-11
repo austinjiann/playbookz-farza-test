@@ -1,34 +1,11 @@
 {
   "shots": [
     {
-      "timestamp_of_outcome": "00:07.200",
+      "timestamp_of_outcome": "00:01.650",
       "result": "made",
-      "total_shots_made_so_far": 1,
+      "feedback": "Great shot! Ball went through the hoop cleanly.",
+      "total_shots_made_so_far": 2,
       "total_shots_missed_so_far": 0
-    },
-    {
-      "timestamp_of_outcome": "00:12.500",
-      "result": "missed",
-      "total_shots_made_so_far": 1,
-      "total_shots_missed_so_far": 1
-    },
-    {
-      "timestamp_of_outcome": "00:16.650",
-      "result": "made",
-      "total_shots_made_so_far": 2,
-      "total_shots_missed_so_far": 1
-    },
-    {
-      "timestamp_of_outcome": "00:21.500",
-      "result": "missed",
-      "total_shots_made_so_far": 2,
-      "total_shots_missed_so_far": 2
-    },
-    {
-      "timestamp_of_outcome": "00:27.500",
-      "result": "missed",
-      "total_shots_made_so_far": 2,
-      "total_shots_missed_so_far": 3
     }
   ]
 }

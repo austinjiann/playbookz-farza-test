@@ -71,6 +71,21 @@ This repo now includes an automated pipeline to analyze basketball videos using 
 - `--no-pad-last-second`: Skip partial seconds instead of padding to 20 frames
 - `--model gemini-2.5-pro`: Change Gemini model (default: gemini-2.5-pro)
 
+### Simple Ball-in-Hoop Heuristic
+
+The analysis uses a simplified frame-by-frame approach for shot detection:
+
+**Rule**: Any frame showing the ball inside the rim cylinder → MADE; otherwise MISSED
+
+**Options**:
+- `--min-consecutive N`: Require N consecutive frames with ball in hoop (default: 1)
+- `--treat-occluded-as-unknown`: Return UNKNOWN if all 20 frames are occluded (default: treat as MISSED)
+
+**Behavior**:
+- MADE timestamps use the first positive frame for precise timing
+- MISSED timestamps use the window midpoint (0.5s offset)  
+- Temperature 0.0 eliminates AI creativity for consistent results
+
 ### Error Handling
 
 The analysis tool includes robust error handling:
