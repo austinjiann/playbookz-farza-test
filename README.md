@@ -15,3 +15,65 @@ To make this a real time product you'll need to:
 This would make a killer iOS app.
 
 Good luck.
+
+## Grid + Gemini Analysis
+
+This repo now includes an automated pipeline to analyze basketball videos using per-second image grids and Gemini 2.5 Pro.
+
+### Setup
+
+1. **Environment setup**:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set your GEMINI_API_KEY
+   ```
+
+2. **Install FFmpeg** (required for grid generation):
+   ```bash
+   # macOS
+   brew install ffmpeg
+   
+   # Ubuntu/Debian  
+   apt install ffmpeg
+   ```
+
+3. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Usage
+
+1. **Generate grids** (creates one 4×5 image per second):
+   ```bash
+   ./scripts/make_grids.sh
+   ```
+   
+   Or with custom parameters:
+   ```bash
+   IN=your_video.mp4 OUT=custom_grids ./scripts/make_grids.sh
+   ```
+
+2. **Run analysis** (sends grids to Gemini 2.5 Pro):
+   ```bash
+   python tools/analyze_grids.py --grids-dir grids
+   ```
+
+### Outputs
+
+- **`analysis/per_second.json`**: Detailed per-second analysis with evidence and confidence scores
+- **`ball.json`**: Compatible format for existing `ball.py` visualization with running totals
+- **Timestamps**: Standardized MM:SS.SSS format with frame-level precision
+
+### Options
+
+- `--keep-grids`: Preserve grid images after analysis (default: deleted to save space)
+- `--no-pad-last-second`: Skip partial seconds instead of padding to 20 frames
+- `--model gemini-2.5-pro`: Change Gemini model (default: gemini-2.5-pro)
+
+### Error Handling
+
+The analysis tool includes robust error handling:
+- Exponential backoff retry for API rate limits
+- Graceful handling of failed grids (continues processing)
+- Exit code reflects success rate (fails if >5% of grids fail)
